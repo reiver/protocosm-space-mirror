@@ -18,6 +18,8 @@ func main() {
 
 	showandtell()
 
+	reloadSpacesOnSIGHUP()
+
 	log.Informf("Here we go…")
 	webservers()
 }

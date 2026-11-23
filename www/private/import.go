@@ -12,6 +12,7 @@ import (
 	_ "protocosm-space-mirror/www/private/xrpc/listRecords"
 	_ "protocosm-space-mirror/www/private/xrpc/listSpaceRecords"
 	_ "protocosm-space-mirror/www/private/xrpc/listWriters"
+	_ "protocosm-space-mirror/www/private/xrpc/reloadSpaces"
 	_ "protocosm-space-mirror/www/private/xrpc/subscribeChanges"
 	_ "protocosm-space-mirror/www/private/xrpc/unhideAccount"
 	_ "protocosm-space-mirror/www/private/xrpc/unhideRecord"

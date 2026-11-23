@@ -94,6 +94,36 @@ func changeHide(logger log.Logger, db *sql.DB, scope HideScope, reason string, n
 	if nil == db {
 		return false, erorr.Wrap(ErrNilDB, "failed to change hide")
 	}
+
+	tx, err := db.Begin()
+	if nil != err {
+		const msg string = "failed to begin transaction"
+		log.Error(field.S(msg), field.E(err))
+		return false, erorr.Wrap(err, msg)
+	}
+	defer tx.Rollback()
+
+	changed, err := changeHideTx(log, tx, scope, reason, now, add, sql.NullInt64{})
+	if nil != err {
+		return false, err
+	}
+	if !changed {
+		return false, nil
+	}
+
+	if err := tx.Commit(); nil != err {
+		const msg string = "failed to commit transaction"
+		log.Error(field.S(msg), field.E(err))
+		return false, erorr.Wrap(err, msg)
+	}
+
+	return true, nil
+}
+
+// changeHideTx adds (or removes) a hide reason to (or from) a scope, inside the caller's transaction,
+// appending a "hidden" / "visible" change-log entry if — and only if — the scope's visibility flips.
+// 'purgeAfter' (when valid) is stored with an added hide (for reasons that lead to a purge).
+func changeHideTx(log log.Logger, tx *sql.Tx, scope HideScope, reason string, now int64, add bool, purgeAfter sql.NullInt64) (bool, error) {
 	if err := scope.Validate(); nil != err {
 		return false, err
 	}
@@ -109,14 +139,6 @@ func changeHide(logger log.Logger, db *sql.DB, scope HideScope, reason string, n
 		field.Bool("add", add),
 	}
 
-	tx, err := db.Begin()
-	if nil != err {
-		const msg string = "failed to begin transaction"
-		log.Error(append([]field.StringlyField{field.S(msg), field.E(err)}, fields...)...)
-		return false, erorr.Wrap(err, msg, fields...)
-	}
-	defer tx.Rollback()
-
 	before, err := scopeVisible(tx, scope)
 	if nil != err {
 		log.Error(append([]field.StringlyField{field.S("failed to check visibility"), field.E(err)}, fields...)...)
@@ -126,8 +148,8 @@ func changeHide(logger log.Logger, db *sql.DB, scope HideScope, reason string, n
 	var result sql.Result
 	if add {
 		result, err = tx.Exec(
-			`INSERT OR IGNORE INTO hides (scope_kind, space_uri, did, collection, rkey, cid, reason, since) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-			scope.Kind, scope.SpaceURI, scope.DID, scope.Collection, scope.RKey, scope.CID, reason, now,
+			`INSERT OR IGNORE INTO hides (scope_kind, space_uri, did, collection, rkey, cid, reason, since, purge_after) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+			scope.Kind, scope.SpaceURI, scope.DID, scope.Collection, scope.RKey, scope.CID, reason, now, purgeAfter,
 		)
 	} else {
 		result, err = tx.Exec(
@@ -178,12 +200,6 @@ func changeHide(logger log.Logger, db *sql.DB, scope HideScope, reason string, n
 			log.Error(append([]field.StringlyField{field.S("failed to append change"), field.E(err)}, fields...)...)
 			return false, erorr.Wrap(err, "failed to append change", fields...)
 		}
-	}
-
-	if err := tx.Commit(); nil != err {
-		const msg string = "failed to commit transaction"
-		log.Error(append([]field.StringlyField{field.S(msg), field.E(err)}, fields...)...)
-		return false, erorr.Wrap(err, msg, fields...)
 	}
 
 	return true, nil

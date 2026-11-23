@@ -18,6 +18,10 @@ func showandtell() {
 		field.String("DB_FILE_NAME", cfg.DBFileName()),
 		field.String("BLOB_DIR", cfg.BlobDir()),
 		field.String("INTERNAL_TOKENS_FILE", cfg.InternalTokensFileName()),
+		field.String("SPACES_FILE", cfg.SpacesFileName()),
+		field.Int("UNLIST_MAX", cfg.UnlistMax()),
+		field.Duration("PURGE_GRACE", cfg.PurgeGrace()),
+		field.Bool("--force-unlist", cfg.ForceUnlist()),
 
 		field.Uint16("PUBLIC_PORT", cfg.HTTPPublicTcpPort()),
 		field.String("INTERNAL_ADDR", cfg.HTTPInternalTcpAddress()),
