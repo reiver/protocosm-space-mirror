@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -31,6 +32,15 @@ func webservers() {
 	log := logsrv.Begin()
 	defer log.End()
 
+	// Every request's context is derived from this one, and it is cancelled when shutting down —
+	// so long-lived requests (ex: change-log streams) end, rather than holding up the shutdown.
+	baseContext, cancelBaseContext := context.WithCancel(context.Background())
+	defer cancelBaseContext()
+
+	var getBaseContext = func(net.Listener) context.Context {
+		return baseContext
+	}
+
 	var servers []*http.Server
 	{
 		var publicTcpAddress string = fmt.Sprintf(":%d", cfg.HTTPPublicTcpPort())
@@ -41,6 +51,7 @@ func webservers() {
 			Handler:           &publichttpsrv.Mux,
 			IdleTimeout:       cfg.HTTPIdleTimeOut(),
 			ReadHeaderTimeout: cfg.HTTPHeaderReadTimeOut(),
+			BaseContext:       getBaseContext,
 		})
 	}
 	{
@@ -52,6 +63,7 @@ func webservers() {
 			Handler:           &internalhttpsrv.Mux,
 			IdleTimeout:       cfg.HTTPIdleTimeOut(),
 			ReadHeaderTimeout: cfg.HTTPHeaderReadTimeOut(),
+			BaseContext:       getBaseContext,
 		})
 	}
 
@@ -61,6 +73,8 @@ func webservers() {
 	go func() {
 		<-stop
 		log.Inform(field.S("shutting down..."))
+
+		cancelBaseContext()
 
 		ctx, cancel := context.WithTimeout(context.Background(), cfg.HTTPShutdownTimeOut())
 		defer cancel()

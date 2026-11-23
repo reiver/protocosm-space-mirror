@@ -54,11 +54,13 @@ func WriteError(responseWriter http.ResponseWriter, statusCode int, name string,
 	WriteJSON(responseWriter, statusCode, body)
 }
 
-// The XRPC error names used by the read end-points.
+// The XRPC error names used by the internal end-points.
 const (
 	ErrorAuthRequired        = "AuthRequired"
 	ErrorBlobNotAvailable    = "BlobNotAvailable"
 	ErrorBlobNotFound        = "BlobNotFound"
+	ErrorCursorTooFarBehind  = "CursorTooFarBehind"
+	ErrorCursorTooOld        = "CursorTooOld"
 	ErrorForbidden           = "Forbidden"
 	ErrorInternalServerError = "InternalServerError"
 	ErrorInvalidCursor       = "InvalidCursor"

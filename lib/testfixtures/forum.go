@@ -28,8 +28,9 @@ const (
 	Alice     = "did:example:alice"
 	Bob       = "did:example:bob"
 
-	// ReadToken has the "read" permission; NoReadToken has none that matter here (only "admin").
+	// ReadToken has the "read" permission; AdminToken has "read" and "admin"; NoReadToken has only "admin".
 	ReadToken   = "test-read-token"
+	AdminToken  = "test-read-admin-token"
 	NoReadToken = "test-admin-only-token"
 )
 
@@ -53,7 +54,7 @@ type Forum struct {
 //	• alice (generation 1): thread 3aaa (with an image blob), thread 3bbb, reply 3ccc,
 //	• bob (generation 0): thread 3ddd,
 //	• the blob's bytes in a file in BlobDir,
-//	• tokens: ReadToken ("read"), and NoReadToken ("admin" only).
+//	• tokens: ReadToken ("read"), AdminToken ("read" and "admin"), and NoReadToken ("admin" only).
 func NewForum(t *testing.T) Forum {
 	t.Helper()
 
@@ -146,10 +147,12 @@ func NewForum(t *testing.T) Forum {
 
 	{
 		readDigest := sha256.Sum256([]byte(ReadToken))
+		readAdminDigest := sha256.Sum256([]byte(AdminToken))
 		adminDigest := sha256.Sum256([]byte(NoReadToken))
 
 		tokens, err := libtkn.ParseTokens(
 			"test-reader read " + hex.EncodeToString(readDigest[:]) + "\n" +
+			"test-operator read,admin " + hex.EncodeToString(readAdminDigest[:]) + "\n" +
 			"test-admin admin " + hex.EncodeToString(adminDigest[:]) + "\n",
 		)
 		if nil != err {
