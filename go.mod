@@ -8,7 +8,9 @@ require (
 	codeberg.org/reiver/go-field v0.0.0-20260509032856-5b4f754dc77e
 	codeberg.org/reiver/go-log v0.0.0-20260509033048-72a468b78312
 	github.com/mattn/go-sqlite3 v1.14.44
+	github.com/reiver/go-drisl v0.0.0-20261123135553-4e4bc138ddf9
 	github.com/reiver/go-nsid v0.0.0-20261117163709-92465113382e
+	github.com/reiver/go-opt v0.0.0-20260410151028-cc34d487e508
 	github.com/reiver/go-pathmux v0.0.0-20260514023951-1eadf8ece990
 )
 
@@ -18,8 +20,10 @@ require (
 	codeberg.org/reiver/go-strparse v0.0.0-20260413055629-df7d67b5ed29 // indirect
 	github.com/reiver/go-calltrace v0.0.0-20251216205616-3931a8c7b154 // indirect
 	github.com/reiver/go-erorr v0.0.0-20240801233437-8cbde6d1fa3f // indirect
+	github.com/reiver/go-json v0.0.0-20260306160333-8285682dd9de // indirect
 	github.com/reiver/go-lck v0.0.0-20250904175207-b06db1642fd1 // indirect
 	github.com/reiver/go-path v0.0.0-20240327181650-5f2ee05890d8 // indirect
 	github.com/reiver/go-pathmatch v1.0.1-0.20260514023412-3be60bdf9f73 // indirect
+	github.com/reiver/go-rfc8949 v0.0.0-20261123133906-3508b28c338a // indirect
 	golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39 // indirect
 )
