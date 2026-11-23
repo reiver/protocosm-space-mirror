@@ -20,6 +20,7 @@ func main() {
 
 	reloadSpacesOnSIGHUP()
 	purgeOnSchedule()
+	sweepLabelsOnSchedule()
 
 	log.Informf("Here we go…")
 	webservers()

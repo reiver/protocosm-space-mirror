@@ -207,7 +207,7 @@ func changeHideTx(log log.Logger, tx *sql.Tx, scope HideScope, reason string, no
 
 // scopeVisible returns whether a scope is visible — counting hides at it and at every enclosing scope.
 //
-// (For a record scope with a CID, a hide on the record with no CID, or with that CID, counts.)
+// (For a record scope, it is the record as served — see below — whatever the scope's CID.)
 func scopeVisible(tx *sql.Tx, scope HideScope) (bool, error) {
 	var query string
 	var args []any
@@ -218,8 +218,9 @@ func scopeVisible(tx *sql.Tx, scope HideScope) (bool, error) {
 		`NOT EXISTS (SELECT 1 FROM hides AS h WHERE h.scope_kind = 'account' AND h.space_uri = '' AND h.did = ? AND h.collection = '' AND h.rkey = '' AND h.cid = '')`
 	const repoNotHidden string =
 		`NOT EXISTS (SELECT 1 FROM hides AS h WHERE h.scope_kind = 'repo' AND h.space_uri = ? AND h.did = ? AND h.collection = '' AND h.rkey = '' AND h.cid = '')`
-	const recordNotHidden string =
-		`NOT EXISTS (SELECT 1 FROM hides AS h WHERE h.scope_kind = 'record' AND h.space_uri = ? AND h.did = ? AND h.collection = ? AND h.rkey = ? AND (h.cid = '' OR h.cid = ?))`
+	const currentRecordVisible string =
+		`EXISTS (SELECT 1 FROM records AS r JOIN repos AS rp ON rp.space_uri = r.space_uri AND rp.did = r.did` +
+		` WHERE r.space_uri = ? AND r.did = ? AND r.collection = ? AND r.rkey = ? AND ` + sqlRecordVisible + `)`
 
 	switch scope.Kind {
 	case ScopeSpace:
@@ -232,8 +233,10 @@ func scopeVisible(tx *sql.Tx, scope HideScope) (bool, error) {
 		query = `SELECT ` + spaceVisible + ` AND ` + accountVisible + ` AND ` + repoNotHidden
 		args = []any{scope.SpaceURI, scope.DID, scope.SpaceURI, scope.DID}
 	case ScopeRecord:
-		query = `SELECT ` + spaceVisible + ` AND ` + accountVisible + ` AND ` + repoNotHidden + ` AND ` + recordNotHidden
-		args = []any{scope.SpaceURI, scope.DID, scope.SpaceURI, scope.DID, scope.SpaceURI, scope.DID, scope.Collection, scope.RKey, scope.CID}
+		// A record is judged as it is served: its current version, in its repo's current generation.
+		// (So a hide of a version that is not the current one — or of a record not here (yet) — flips nothing.)
+		query = `SELECT ` + spaceVisible + ` AND ` + accountVisible + ` AND ` + repoNotHidden + ` AND ` + currentRecordVisible
+		args = []any{scope.SpaceURI, scope.DID, scope.SpaceURI, scope.DID, scope.SpaceURI, scope.DID, scope.Collection, scope.RKey}
 	default:
 		return false, ErrBadHideScope
 	}
