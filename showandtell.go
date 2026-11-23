@@ -16,6 +16,8 @@ func showandtell() {
 
 		field.String("LOG_LEVEL", cfg.LogLevel()),
 		field.String("DB_FILE_NAME", cfg.DBFileName()),
+		field.String("BLOB_DIR", cfg.BlobDir()),
+		field.String("INTERNAL_TOKENS_FILE", cfg.InternalTokensFileName()),
 
 		field.Uint16("PUBLIC_PORT", cfg.HTTPPublicTcpPort()),
 		field.String("INTERNAL_ADDR", cfg.HTTPInternalTcpAddress()),

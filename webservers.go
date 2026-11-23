@@ -16,6 +16,8 @@ import (
 	"protocosm-space-mirror/srv/internalhttp"
 	"protocosm-space-mirror/srv/log"
 	"protocosm-space-mirror/srv/publichttp"
+
+	_ "protocosm-space-mirror/www/private"
 )
 
 // webservers runs the two HTTP listeners of the space-mirror:
