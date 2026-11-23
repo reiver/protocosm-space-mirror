@@ -19,6 +19,7 @@ func main() {
 	showandtell()
 
 	reloadSpacesOnSIGHUP()
+	purgeOnSchedule()
 
 	log.Informf("Here we go…")
 	webservers()

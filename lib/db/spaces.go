@@ -121,7 +121,7 @@ func ApplySpacesList(logger log.Logger, db *sql.DB, added []string, removed []st
 	}
 
 	for _, spaceURI := range relisted {
-		if _, err := tx.Exec(`UPDATE spaces SET listed = 1 WHERE space_uri = ?`, spaceURI); nil != err {
+		if _, err := tx.Exec(`UPDATE spaces SET listed = 1, lifecycle = CASE WHEN 'purged' = lifecycle THEN 'unavailable' ELSE lifecycle END WHERE space_uri = ?`, spaceURI); nil != err {
 			const msg string = "failed to re-list space"
 			log.Error(field.S(msg), field.E(err), field.String("space-uri", spaceURI))
 			return false, erorr.Wrap(err, msg, field.String("space-uri", spaceURI))
